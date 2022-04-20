@@ -6,6 +6,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/filecoin-project/go-state-types/builtin/v8/manifest"
+
 	"golang.org/x/xerrors"
 
 	cid "github.com/ipfs/go-cid"
@@ -14,7 +16,6 @@ import (
 
 	"github.com/filecoin-project/lotus/blockstore"
 	"github.com/filecoin-project/lotus/chain/actors/adt"
-	"github.com/filecoin-project/specs-actors/v8/actors/builtin/manifest"
 )
 
 var manifestCids map[Version]cid.Cid = map[Version]cid.Cid{
@@ -23,6 +24,18 @@ var manifestCids map[Version]cid.Cid = map[Version]cid.Cid{
 
 var manifests map[Version]*manifest.Manifest
 var actorMeta map[cid.Cid]actorEntry
+
+const AccountKey = "account"
+const CronKey = "cron"
+const InitKey = "init"
+const MarketKey = "market"
+const MinerKey = "miner"
+const MultisigKey = "multisig"
+const PaychKey = "paych"
+const PowerKey = "power"
+const RewardKey = "reward"
+const SystemKey = "system"
+const VerifregKey = "verifreg"
 
 var (
 	manifestMx sync.RWMutex

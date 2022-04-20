@@ -2,9 +2,8 @@ package ffiwrapper
 
 import (
 	"context"
+	"github.com/filecoin-project/go-state-types/builtin/v8/miner"
 	"io"
-
-	"github.com/filecoin-project/specs-actors/v7/actors/runtime/proof"
 
 	"github.com/ipfs/go-cid"
 
@@ -34,11 +33,11 @@ type Storage interface {
 }
 
 type Verifier interface {
-	VerifySeal(proof.SealVerifyInfo) (bool, error)
-	VerifyAggregateSeals(aggregate proof.AggregateSealVerifyProofAndInfos) (bool, error)
-	VerifyReplicaUpdate(update proof.ReplicaUpdateInfo) (bool, error)
-	VerifyWinningPoSt(ctx context.Context, info proof.WinningPoStVerifyInfo) (bool, error)
-	VerifyWindowPoSt(ctx context.Context, info proof.WindowPoStVerifyInfo) (bool, error)
+	VerifySeal(miner.SealVerifyInfo) (bool, error)
+	VerifyAggregateSeals(aggregate miner.AggregateSealVerifyProofAndInfos) (bool, error)
+	VerifyReplicaUpdate(update miner.ReplicaUpdateInfo) (bool, error)
+	VerifyWinningPoSt(ctx context.Context, info miner.WinningPoStVerifyInfo) (bool, error)
+	VerifyWindowPoSt(ctx context.Context, info miner.WindowPoStVerifyInfo) (bool, error)
 
 	GenerateWinningPoStSectorChallenge(context.Context, abi.RegisteredPoStProof, abi.ActorID, abi.PoStRandomness, uint64) ([]uint64, error)
 }
@@ -47,7 +46,7 @@ type Verifier interface {
 type Prover interface {
 	// TODO: move GenerateWinningPoStSectorChallenge from the Verifier interface to here
 
-	AggregateSealProofs(aggregateInfo proof.AggregateSealVerifyProofAndInfos, proofs [][]byte) ([]byte, error)
+	AggregateSealProofs(aggregateInfo miner.AggregateSealVerifyProofAndInfos, proofs [][]byte) ([]byte, error)
 }
 
 type SectorProvider interface {

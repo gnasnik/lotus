@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/filecoin-project/go-state-types/builtin/v8/miner"
+
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 
 	"github.com/filecoin-project/go-state-types/abi"
-	"github.com/filecoin-project/specs-actors/actors/runtime/proof"
 	"github.com/filecoin-project/specs-storage/storage"
 
 	"github.com/filecoin-project/lotus/extern/sector-storage/sealtasks"
@@ -134,12 +135,12 @@ type WorkerCalls interface {
 	Fetch(context.Context, storage.SectorRef, SectorFileType, PathType, AcquireMode) (CallID, error)
 
 	// sync
-	GenerateWinningPoSt(ctx context.Context, ppt abi.RegisteredPoStProof, mid abi.ActorID, sectors []PostSectorChallenge, randomness abi.PoStRandomness) ([]proof.PoStProof, error)
+	GenerateWinningPoSt(ctx context.Context, ppt abi.RegisteredPoStProof, mid abi.ActorID, sectors []PostSectorChallenge, randomness abi.PoStRandomness) ([]miner.PoStProof, error)
 	GenerateWindowPoSt(ctx context.Context, ppt abi.RegisteredPoStProof, mid abi.ActorID, sectors []PostSectorChallenge, partitionIdx int, randomness abi.PoStRandomness) (WindowPoStResult, error)
 }
 
 type WindowPoStResult struct {
-	PoStProofs proof.PoStProof
+	PoStProofs miner.PoStProof
 	Skipped    []abi.SectorID
 }
 

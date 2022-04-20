@@ -6,8 +6,8 @@ import (
 	"bytes"
 	"context"
 
+	market8 "github.com/filecoin-project/go-state-types/builtin/v8/market"
 	builtin6 "github.com/filecoin-project/specs-actors/v6/actors/builtin"
-	market8 "github.com/filecoin-project/specs-actors/v8/actors/builtin/market"
 
 	"github.com/ipfs/go-cid"
 	"go.uber.org/fx"
@@ -184,7 +184,7 @@ func (c *ClientNodeAdapter) ValidatePublishedDeal(ctx context.Context, deal stor
 		return 0, xerrors.Errorf("deal publish message called incorrect method (method=%s)", pubmsg.Method)
 	}
 
-	var params marketactor.PublishStorageDealsParams
+	var params market8.PublishStorageDealsParams
 	if err := params.UnmarshalCBOR(bytes.NewReader(pubmsg.Params)); err != nil {
 		return 0, err
 	}
@@ -368,7 +368,7 @@ func (c *ClientNodeAdapter) OnDealExpiredOrSlashed(ctx context.Context, dealID a
 	return nil
 }
 
-func (c *ClientNodeAdapter) SignProposal(ctx context.Context, signer address.Address, proposal market8.DealProposal) (*marketactor.ClientDealProposal, error) {
+func (c *ClientNodeAdapter) SignProposal(ctx context.Context, signer address.Address, proposal market8.DealProposal) (*market8.ClientDealProposal, error) {
 	// TODO: output spec signed proposal
 	buf, err := cborutil.Dump(&proposal)
 	if err != nil {
@@ -387,7 +387,7 @@ func (c *ClientNodeAdapter) SignProposal(ctx context.Context, signer address.Add
 		return nil, err
 	}
 
-	return &marketactor.ClientDealProposal{
+	return &market8.ClientDealProposal{
 		Proposal:        proposal,
 		ClientSignature: *sig,
 	}, nil

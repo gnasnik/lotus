@@ -9,7 +9,7 @@ import (
 )
 
 func run() error {
-	tfb, err := ioutil.ReadFile("./node/config/types.go")
+	tfb, err := ioutil.ReadFile("./node/config/market_types.go")
 	if err != nil {
 		return err
 	}

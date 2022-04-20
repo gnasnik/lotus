@@ -11,6 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/filecoin-project/go-state-types/builtin/v8/miner"
+
 	"github.com/elastic/go-sysinfo"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
@@ -20,7 +22,6 @@ import (
 	ffi "github.com/filecoin-project/filecoin-ffi"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-statestore"
-	"github.com/filecoin-project/specs-actors/actors/runtime/proof"
 	"github.com/filecoin-project/specs-storage/storage"
 
 	"github.com/filecoin-project/lotus/extern/sector-storage/ffiwrapper"
@@ -571,7 +572,7 @@ func (l *LocalWorker) UnsealPiece(ctx context.Context, sector storage.SectorRef,
 	})
 }
 
-func (l *LocalWorker) GenerateWinningPoSt(ctx context.Context, ppt abi.RegisteredPoStProof, mid abi.ActorID, sectors []storiface.PostSectorChallenge, randomness abi.PoStRandomness) ([]proof.PoStProof, error) {
+func (l *LocalWorker) GenerateWinningPoSt(ctx context.Context, ppt abi.RegisteredPoStProof, mid abi.ActorID, sectors []storiface.PostSectorChallenge, randomness abi.PoStRandomness) ([]miner.PoStProof, error) {
 	sb, err := l.executor()
 	if err != nil {
 		return nil, err

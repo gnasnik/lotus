@@ -36,12 +36,12 @@ require (
 	github.com/filecoin-project/go-data-transfer v1.15.1
 	github.com/filecoin-project/go-fil-commcid v0.1.0
 	github.com/filecoin-project/go-fil-commp-hashhash v0.1.0
-	github.com/filecoin-project/go-fil-markets v1.20.2
+	github.com/filecoin-project/go-fil-markets v1.20.3-0.20220422215800-3f5f5f2c6f16
 	github.com/filecoin-project/go-jsonrpc v0.1.5
 	github.com/filecoin-project/go-legs v0.3.10
 	github.com/filecoin-project/go-padreader v0.0.1
 	github.com/filecoin-project/go-paramfetch v0.0.4
-	github.com/filecoin-project/go-state-types v0.1.3
+	github.com/filecoin-project/go-state-types v0.1.4-0.20220422215029-be7db11a85d1
 	github.com/filecoin-project/go-statemachine v1.0.2
 	github.com/filecoin-project/go-statestore v0.2.0
 	github.com/filecoin-project/go-storedcounter v0.1.0
@@ -52,9 +52,9 @@ require (
 	github.com/filecoin-project/specs-actors/v4 v4.0.1
 	github.com/filecoin-project/specs-actors/v5 v5.0.4
 	github.com/filecoin-project/specs-actors/v6 v6.0.1
-	github.com/filecoin-project/specs-actors/v7 v7.0.0
+	github.com/filecoin-project/specs-actors/v7 v7.0.1-0.20220422215604-2fb54dfb3105
 	github.com/filecoin-project/specs-actors/v8 v8.0.0-20220422153930-0afe155bfffa
-	github.com/filecoin-project/specs-storage v0.2.2
+	github.com/filecoin-project/specs-storage v0.2.3-0.20220422215211-cef08eb25e8e
 	github.com/filecoin-project/test-vectors/schema v0.0.5
 	github.com/gbrlsnchs/jwt/v3 v3.0.1
 	github.com/gdamore/tcell/v2 v2.2.0
@@ -144,7 +144,7 @@ require (
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/whyrusleeping/bencher v0.0.0-20190829221104-bb6607aa8bba
-	github.com/whyrusleeping/cbor-gen v0.0.0-20220302191723-37c43cae8e14
+	github.com/whyrusleeping/cbor-gen v0.0.0-20220323183124-98fa8256a799
 	github.com/whyrusleeping/ledger-filecoin-go v0.9.1-0.20201010031517-c3dcc1bddce4
 	github.com/whyrusleeping/multiaddr-filter v0.0.0-20160516205228-e903e4adabd7
 	github.com/whyrusleeping/pubsub v0.0.0-20190708150250-92bcb0691325

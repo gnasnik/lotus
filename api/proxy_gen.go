@@ -15,13 +15,14 @@ import (
 	"github.com/filecoin-project/go-fil-markets/storagemarket"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/filecoin-project/go-state-types/abi"
+	"github.com/filecoin-project/go-state-types/builtin/v8/miner"
+	"github.com/filecoin-project/go-state-types/builtin/v8/paych"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/filecoin-project/go-state-types/dline"
 	abinetwork "github.com/filecoin-project/go-state-types/network"
 	apitypes "github.com/filecoin-project/lotus/api/types"
 	"github.com/filecoin-project/lotus/chain/actors/builtin"
-	"github.com/filecoin-project/lotus/chain/actors/builtin/miner"
-	"github.com/filecoin-project/lotus/chain/actors/builtin/paych"
+	lminer "github.com/filecoin-project/lotus/chain/actors/builtin/miner"
 	"github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/extern/sector-storage/fsutil"
 	"github.com/filecoin-project/lotus/extern/sector-storage/sealtasks"
@@ -30,7 +31,6 @@ import (
 	"github.com/filecoin-project/lotus/journal/alerting"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
 	"github.com/filecoin-project/lotus/node/repo/imports"
-	"github.com/filecoin-project/specs-actors/v5/actors/runtime/proof"
 	"github.com/filecoin-project/specs-storage/storage"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
@@ -380,7 +380,7 @@ type FullNodeStruct struct {
 
 		StateMinerFaults func(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (bitfield.BitField, error) `perm:"read"`
 
-		StateMinerInfo func(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (miner.MinerInfo, error) `perm:"read"`
+		StateMinerInfo func(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (MinerInfo, error) `perm:"read"`
 
 		StateMinerInitialPledgeCollateral func(p0 context.Context, p1 address.Address, p2 miner.SectorPreCommitInfo, p3 types.TipSetKey) (types.BigInt, error) `perm:"read"`
 
@@ -410,11 +410,11 @@ type FullNodeStruct struct {
 
 		StateSearchMsg func(p0 context.Context, p1 types.TipSetKey, p2 cid.Cid, p3 abi.ChainEpoch, p4 bool) (*MsgLookup, error) `perm:"read"`
 
-		StateSectorExpiration func(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*miner.SectorExpiration, error) `perm:"read"`
+		StateSectorExpiration func(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*lminer.SectorExpiration, error) `perm:"read"`
 
 		StateSectorGetInfo func(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*miner.SectorOnChainInfo, error) `perm:"read"`
 
-		StateSectorPartition func(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*miner.SectorLocation, error) `perm:"read"`
+		StateSectorPartition func(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*lminer.SectorLocation, error) `perm:"read"`
 
 		StateSectorPreCommitInfo func(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (miner.SectorPreCommitOnChainInfo, error) `perm:"read"`
 
@@ -534,7 +534,7 @@ type GatewayStruct struct {
 
 		StateMarketStorageDeal func(p0 context.Context, p1 abi.DealID, p2 types.TipSetKey) (*MarketDeal, error) ``
 
-		StateMinerInfo func(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (miner.MinerInfo, error) ``
+		StateMinerInfo func(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (MinerInfo, error) ``
 
 		StateMinerPower func(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (*MinerPower, error) ``
 
@@ -904,7 +904,7 @@ type WorkerStruct struct {
 
 		GenerateWindowPoSt func(p0 context.Context, p1 abi.RegisteredPoStProof, p2 abi.ActorID, p3 []storiface.PostSectorChallenge, p4 int, p5 abi.PoStRandomness) (storiface.WindowPoStResult, error) `perm:"admin"`
 
-		GenerateWinningPoSt func(p0 context.Context, p1 abi.RegisteredPoStProof, p2 abi.ActorID, p3 []storiface.PostSectorChallenge, p4 abi.PoStRandomness) ([]proof.PoStProof, error) `perm:"admin"`
+		GenerateWinningPoSt func(p0 context.Context, p1 abi.RegisteredPoStProof, p2 abi.ActorID, p3 []storiface.PostSectorChallenge, p4 abi.PoStRandomness) ([]miner.PoStProof, error) `perm:"admin"`
 
 		Info func(p0 context.Context) (storiface.WorkerInfo, error) `perm:"admin"`
 
@@ -2616,15 +2616,15 @@ func (s *FullNodeStub) StateMinerFaults(p0 context.Context, p1 address.Address, 
 	return *new(bitfield.BitField), ErrNotSupported
 }
 
-func (s *FullNodeStruct) StateMinerInfo(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (miner.MinerInfo, error) {
+func (s *FullNodeStruct) StateMinerInfo(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (MinerInfo, error) {
 	if s.Internal.StateMinerInfo == nil {
-		return *new(miner.MinerInfo), ErrNotSupported
+		return *new(MinerInfo), ErrNotSupported
 	}
 	return s.Internal.StateMinerInfo(p0, p1, p2)
 }
 
-func (s *FullNodeStub) StateMinerInfo(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (miner.MinerInfo, error) {
-	return *new(miner.MinerInfo), ErrNotSupported
+func (s *FullNodeStub) StateMinerInfo(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (MinerInfo, error) {
+	return *new(MinerInfo), ErrNotSupported
 }
 
 func (s *FullNodeStruct) StateMinerInitialPledgeCollateral(p0 context.Context, p1 address.Address, p2 miner.SectorPreCommitInfo, p3 types.TipSetKey) (types.BigInt, error) {
@@ -2781,14 +2781,14 @@ func (s *FullNodeStub) StateSearchMsg(p0 context.Context, p1 types.TipSetKey, p2
 	return nil, ErrNotSupported
 }
 
-func (s *FullNodeStruct) StateSectorExpiration(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*miner.SectorExpiration, error) {
+func (s *FullNodeStruct) StateSectorExpiration(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*lminer.SectorExpiration, error) {
 	if s.Internal.StateSectorExpiration == nil {
 		return nil, ErrNotSupported
 	}
 	return s.Internal.StateSectorExpiration(p0, p1, p2, p3)
 }
 
-func (s *FullNodeStub) StateSectorExpiration(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*miner.SectorExpiration, error) {
+func (s *FullNodeStub) StateSectorExpiration(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*lminer.SectorExpiration, error) {
 	return nil, ErrNotSupported
 }
 
@@ -2803,14 +2803,14 @@ func (s *FullNodeStub) StateSectorGetInfo(p0 context.Context, p1 address.Address
 	return nil, ErrNotSupported
 }
 
-func (s *FullNodeStruct) StateSectorPartition(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*miner.SectorLocation, error) {
+func (s *FullNodeStruct) StateSectorPartition(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*lminer.SectorLocation, error) {
 	if s.Internal.StateSectorPartition == nil {
 		return nil, ErrNotSupported
 	}
 	return s.Internal.StateSectorPartition(p0, p1, p2, p3)
 }
 
-func (s *FullNodeStub) StateSectorPartition(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*miner.SectorLocation, error) {
+func (s *FullNodeStub) StateSectorPartition(p0 context.Context, p1 address.Address, p2 abi.SectorNumber, p3 types.TipSetKey) (*lminer.SectorLocation, error) {
 	return nil, ErrNotSupported
 }
 
@@ -3408,15 +3408,15 @@ func (s *GatewayStub) StateMarketStorageDeal(p0 context.Context, p1 abi.DealID, 
 	return nil, ErrNotSupported
 }
 
-func (s *GatewayStruct) StateMinerInfo(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (miner.MinerInfo, error) {
+func (s *GatewayStruct) StateMinerInfo(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (MinerInfo, error) {
 	if s.Internal.StateMinerInfo == nil {
-		return *new(miner.MinerInfo), ErrNotSupported
+		return *new(MinerInfo), ErrNotSupported
 	}
 	return s.Internal.StateMinerInfo(p0, p1, p2)
 }
 
-func (s *GatewayStub) StateMinerInfo(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (miner.MinerInfo, error) {
-	return *new(miner.MinerInfo), ErrNotSupported
+func (s *GatewayStub) StateMinerInfo(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (MinerInfo, error) {
+	return *new(MinerInfo), ErrNotSupported
 }
 
 func (s *GatewayStruct) StateMinerPower(p0 context.Context, p1 address.Address, p2 types.TipSetKey) (*MinerPower, error) {
@@ -5212,15 +5212,15 @@ func (s *WorkerStub) GenerateWindowPoSt(p0 context.Context, p1 abi.RegisteredPoS
 	return *new(storiface.WindowPoStResult), ErrNotSupported
 }
 
-func (s *WorkerStruct) GenerateWinningPoSt(p0 context.Context, p1 abi.RegisteredPoStProof, p2 abi.ActorID, p3 []storiface.PostSectorChallenge, p4 abi.PoStRandomness) ([]proof.PoStProof, error) {
+func (s *WorkerStruct) GenerateWinningPoSt(p0 context.Context, p1 abi.RegisteredPoStProof, p2 abi.ActorID, p3 []storiface.PostSectorChallenge, p4 abi.PoStRandomness) ([]miner.PoStProof, error) {
 	if s.Internal.GenerateWinningPoSt == nil {
-		return *new([]proof.PoStProof), ErrNotSupported
+		return *new([]miner.PoStProof), ErrNotSupported
 	}
 	return s.Internal.GenerateWinningPoSt(p0, p1, p2, p3, p4)
 }
 
-func (s *WorkerStub) GenerateWinningPoSt(p0 context.Context, p1 abi.RegisteredPoStProof, p2 abi.ActorID, p3 []storiface.PostSectorChallenge, p4 abi.PoStRandomness) ([]proof.PoStProof, error) {
-	return *new([]proof.PoStProof), ErrNotSupported
+func (s *WorkerStub) GenerateWinningPoSt(p0 context.Context, p1 abi.RegisteredPoStProof, p2 abi.ActorID, p3 []storiface.PostSectorChallenge, p4 abi.PoStRandomness) ([]miner.PoStProof, error) {
+	return *new([]miner.PoStProof), ErrNotSupported
 }
 
 func (s *WorkerStruct) Info(p0 context.Context) (storiface.WorkerInfo, error) {

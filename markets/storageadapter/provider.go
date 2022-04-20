@@ -6,7 +6,7 @@ import (
 	"context"
 	"time"
 
-	market8 "github.com/filecoin-project/specs-actors/v8/actors/builtin/market"
+	market8 "github.com/filecoin-project/go-state-types/builtin/v8/market"
 
 	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log/v2"

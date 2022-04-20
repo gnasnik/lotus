@@ -30,7 +30,6 @@ import (
 	exported5 "github.com/filecoin-project/specs-actors/v5/actors/builtin/exported"
 	exported6 "github.com/filecoin-project/specs-actors/v6/actors/builtin/exported"
 	exported7 "github.com/filecoin-project/specs-actors/v7/actors/builtin/exported"
-	exported8 "github.com/filecoin-project/specs-actors/v8/actors/builtin/exported"
 
 	/* inline-gen end */
 
@@ -64,7 +63,6 @@ func NewActorRegistry() *vm.ActorRegistry {
 	inv.Register(actors.Version5, vm.ActorsVersionPredicate(actors.Version5), exported5.BuiltinActors()...)
 	inv.Register(actors.Version6, vm.ActorsVersionPredicate(actors.Version6), exported6.BuiltinActors()...)
 	inv.Register(actors.Version7, vm.ActorsVersionPredicate(actors.Version7), exported7.BuiltinActors()...)
-	inv.Register(actors.Version8, vm.ActorsVersionPredicate(actors.Version8), exported8.BuiltinActors()...)
 
 	/* inline-gen end */
 

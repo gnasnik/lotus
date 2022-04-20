@@ -6,8 +6,9 @@ import (
 	"math/rand"
 	"sort"
 
-	"github.com/filecoin-project/lotus/chain/actors/builtin"
-	"github.com/filecoin-project/lotus/chain/actors/builtin/paych"
+	lbuiltin "github.com/filecoin-project/lotus/chain/actors/builtin"
+
+	"github.com/filecoin-project/go-state-types/builtin"
 	lru "github.com/hashicorp/golang-lru"
 
 	"go.uber.org/fx"
@@ -311,10 +312,10 @@ func gasEstimateGasLimit(
 		return res.MsgRct.GasUsed, nil
 	}
 
-	if !builtin.IsPaymentChannelActor(act.Code) {
+	if !lbuiltin.IsPaymentChannelActor(act.Code) {
 		return res.MsgRct.GasUsed, nil
 	}
-	if msgIn.Method != paych.Methods.Collect {
+	if msgIn.Method != builtin.MethodsPaych.Collect {
 		return res.MsgRct.GasUsed, nil
 	}
 

@@ -11,9 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
-	saproof2 "github.com/filecoin-project/specs-actors/v2/actors/runtime/proof"
-	"github.com/filecoin-project/specs-actors/v7/actors/runtime/proof"
-	saproof7 "github.com/filecoin-project/specs-actors/v7/actors/runtime/proof"
+	minertypes "github.com/filecoin-project/go-state-types/builtin/v8/miner"
 
 	"github.com/docker/go-units"
 	logging "github.com/ipfs/go-log/v2"
@@ -262,8 +260,8 @@ var sealBenchCmd = &cli.Command{
 		sectorNumber := c.Int("num-sectors")
 
 		var sealTimings []SealingResult
-		var extendedSealedSectors []saproof7.ExtendedSectorInfo
-		var sealedSectors []saproof7.SectorInfo
+		var extendedSealedSectors []minertypes.ExtendedSectorInfo
+		var sealedSectors []minertypes.SectorInfo
 
 		if robench == "" {
 			var err error
@@ -277,7 +275,7 @@ var sealBenchCmd = &cli.Command{
 				return xerrors.Errorf("failed to run seals: %w", err)
 			}
 			for _, s := range extendedSealedSectors {
-				sealedSectors = append(sealedSectors, proof.SectorInfo{
+				sealedSectors = append(sealedSectors, minertypes.SectorInfo{
 					SealedCID:    s.SealedCID,
 					SectorNumber: s.SectorNumber,
 					SealProof:    s.SealProof,
@@ -306,13 +304,13 @@ var sealBenchCmd = &cli.Command{
 			}
 
 			for _, s := range genm.Sectors {
-				extendedSealedSectors = append(extendedSealedSectors, saproof7.ExtendedSectorInfo{
+				extendedSealedSectors = append(extendedSealedSectors, minertypes.ExtendedSectorInfo{
 					SealedCID:    s.CommR,
 					SectorNumber: s.SectorID,
 					SealProof:    s.ProofType,
 					SectorKey:    nil,
 				})
-				sealedSectors = append(sealedSectors, proof.SectorInfo{
+				sealedSectors = append(sealedSectors, minertypes.SectorInfo{
 					SealedCID:    s.CommR,
 					SectorNumber: s.SectorID,
 					SealProof:    s.ProofType,
@@ -346,7 +344,7 @@ var sealBenchCmd = &cli.Command{
 				return err
 			}
 
-			xcandidates := make([]saproof7.ExtendedSectorInfo, len(fcandidates))
+			xcandidates := make([]minertypes.ExtendedSectorInfo, len(fcandidates))
 			for i, fcandidate := range fcandidates {
 				xcandidates[i] = extendedSealedSectors[fcandidate]
 			}
@@ -367,9 +365,9 @@ var sealBenchCmd = &cli.Command{
 				return err
 			}
 
-			candidates := make([]saproof7.SectorInfo, len(xcandidates))
+			candidates := make([]minertypes.SectorInfo, len(xcandidates))
 			for i, xsi := range xcandidates {
-				candidates[i] = saproof7.SectorInfo{
+				candidates[i] = minertypes.SectorInfo{
 					SealedCID:    xsi.SealedCID,
 					SectorNumber: xsi.SectorNumber,
 					SealProof:    xsi.SealProof,
@@ -378,7 +376,7 @@ var sealBenchCmd = &cli.Command{
 
 			winnningpost2 := time.Now()
 
-			pvi1 := saproof7.WinningPoStVerifyInfo{
+			pvi1 := minertypes.WinningPoStVerifyInfo{
 				Randomness:        abi.PoStRandomness(challenge[:]),
 				Proofs:            proof1,
 				ChallengedSectors: candidates,
@@ -394,7 +392,7 @@ var sealBenchCmd = &cli.Command{
 
 			verifyWinningPost1 := time.Now()
 
-			pvi2 := saproof7.WinningPoStVerifyInfo{
+			pvi2 := minertypes.WinningPoStVerifyInfo{
 				Randomness:        abi.PoStRandomness(challenge[:]),
 				Proofs:            proof2,
 				ChallengedSectors: candidates,
@@ -426,7 +424,7 @@ var sealBenchCmd = &cli.Command{
 
 			windowpost2 := time.Now()
 
-			wpvi1 := saproof2.WindowPoStVerifyInfo{
+			wpvi1 := minertypes.WindowPoStVerifyInfo{
 				Randomness:        challenge[:],
 				Proofs:            wproof1,
 				ChallengedSectors: sealedSectors,
@@ -442,7 +440,7 @@ var sealBenchCmd = &cli.Command{
 
 			verifyWindowpost1 := time.Now()
 
-			wpvi2 := saproof2.WindowPoStVerifyInfo{
+			wpvi2 := minertypes.WindowPoStVerifyInfo{
 				Randomness:        challenge[:],
 				Proofs:            wproof2,
 				ChallengedSectors: sealedSectors,
@@ -527,10 +525,10 @@ type ParCfg struct {
 	Commit     int
 }
 
-func runSeals(sb *ffiwrapper.Sealer, sbfs *basicfs.Provider, numSectors int, par ParCfg, mid abi.ActorID, sectorSize abi.SectorSize, ticketPreimage []byte, saveC2inp string, skipc2, skipunseal bool) ([]SealingResult, []saproof7.ExtendedSectorInfo, error) {
+func runSeals(sb *ffiwrapper.Sealer, sbfs *basicfs.Provider, numSectors int, par ParCfg, mid abi.ActorID, sectorSize abi.SectorSize, ticketPreimage []byte, saveC2inp string, skipc2, skipunseal bool) ([]SealingResult, []minertypes.ExtendedSectorInfo, error) {
 	var pieces []abi.PieceInfo
 	sealTimings := make([]SealingResult, numSectors)
-	sealedSectors := make([]saproof7.ExtendedSectorInfo, numSectors)
+	sealedSectors := make([]minertypes.ExtendedSectorInfo, numSectors)
 
 	preCommit2Sema := make(chan struct{}, par.PreCommit2)
 	commitSema := make(chan struct{}, par.Commit)
@@ -604,7 +602,7 @@ func runSeals(sb *ffiwrapper.Sealer, sbfs *basicfs.Provider, numSectors int, par
 					precommit2 := time.Now()
 					<-preCommit2Sema
 
-					sealedSectors[i] = saproof7.ExtendedSectorInfo{
+					sealedSectors[i] = minertypes.ExtendedSectorInfo{
 						SealProof:    sid.ProofType,
 						SectorNumber: i,
 						SealedCID:    cids.Sealed,
@@ -657,7 +655,7 @@ func runSeals(sb *ffiwrapper.Sealer, sbfs *basicfs.Provider, numSectors int, par
 					<-commitSema
 
 					if !skipc2 {
-						svi := saproof2.SealVerifyInfo{
+						svi := minertypes.SealVerifyInfo{
 							SectorID:              abi.SectorID{Miner: mid, Number: i},
 							SealedCID:             cids.Sealed,
 							SealProof:             sid.ProofType,

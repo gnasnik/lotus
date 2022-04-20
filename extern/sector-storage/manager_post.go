@@ -5,6 +5,8 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/filecoin-project/go-state-types/builtin/v8/miner"
+
 	"go.uber.org/multierr"
 	"golang.org/x/xerrors"
 
@@ -17,7 +19,7 @@ import (
 	"github.com/filecoin-project/lotus/extern/sector-storage/storiface"
 )
 
-func (m *Manager) GenerateWinningPoSt(ctx context.Context, minerID abi.ActorID, sectorInfo []proof.ExtendedSectorInfo, randomness abi.PoStRandomness) ([]proof.PoStProof, error) {
+func (m *Manager) GenerateWinningPoSt(ctx context.Context, minerID abi.ActorID, sectorInfo []proof.ExtendedSectorInfo, randomness abi.PoStRandomness) ([]miner.PoStProof, error) {
 	if !m.winningPoStSched.CanSched(ctx) {
 		log.Info("GenerateWinningPoSt run at lotus-miner")
 		return m.localProver.GenerateWinningPoSt(ctx, minerID, sectorInfo, randomness)
@@ -25,7 +27,7 @@ func (m *Manager) GenerateWinningPoSt(ctx context.Context, minerID abi.ActorID, 
 	return m.generateWinningPoSt(ctx, minerID, sectorInfo, randomness)
 }
 
-func (m *Manager) generateWinningPoSt(ctx context.Context, minerID abi.ActorID, sectorInfo []proof.ExtendedSectorInfo, randomness abi.PoStRandomness) ([]proof.PoStProof, error) {
+func (m *Manager) generateWinningPoSt(ctx context.Context, minerID abi.ActorID, sectorInfo []proof.ExtendedSectorInfo, randomness abi.PoStRandomness) ([]miner.PoStProof, error) {
 	randomness[31] &= 0x3f
 
 	sectorNums := make([]abi.SectorNumber, len(sectorInfo))
@@ -60,7 +62,7 @@ func (m *Manager) generateWinningPoSt(ctx context.Context, minerID abi.ActorID, 
 		}
 	}
 
-	var proofs []proof.PoStProof
+	var proofs []miner.PoStProof
 	err = m.winningPoStSched.Schedule(ctx, false, spt, func(ctx context.Context, w Worker) error {
 		out, err := w.GenerateWinningPoSt(ctx, ppt, minerID, sectorChallenges, randomness)
 		if err != nil {
@@ -76,7 +78,7 @@ func (m *Manager) generateWinningPoSt(ctx context.Context, minerID abi.ActorID, 
 	return proofs, nil
 }
 
-func (m *Manager) GenerateWindowPoSt(ctx context.Context, minerID abi.ActorID, sectorInfo []proof.ExtendedSectorInfo, randomness abi.PoStRandomness) (proof []proof.PoStProof, skipped []abi.SectorID, err error) {
+func (m *Manager) GenerateWindowPoSt(ctx context.Context, minerID abi.ActorID, sectorInfo []proof.ExtendedSectorInfo, randomness abi.PoStRandomness) (proof []miner.PoStProof, skipped []abi.SectorID, err error) {
 	if !m.windowPoStSched.CanSched(ctx) {
 		log.Info("GenerateWindowPoSt run at lotus-miner")
 		return m.localProver.GenerateWindowPoSt(ctx, minerID, sectorInfo, randomness)
@@ -98,11 +100,11 @@ func dedupeSectorInfo(sectorInfo []proof.ExtendedSectorInfo) []proof.ExtendedSec
 	return out
 }
 
-func (m *Manager) generateWindowPoSt(ctx context.Context, minerID abi.ActorID, sectorInfo []proof.ExtendedSectorInfo, randomness abi.PoStRandomness) ([]proof.PoStProof, []abi.SectorID, error) {
+func (m *Manager) generateWindowPoSt(ctx context.Context, minerID abi.ActorID, sectorInfo []proof.ExtendedSectorInfo, randomness abi.PoStRandomness) ([]miner.PoStProof, []abi.SectorID, error) {
 	var retErr error = nil
 	randomness[31] &= 0x3f
 
-	out := make([]proof.PoStProof, 0)
+	out := make([]miner.PoStProof, 0)
 
 	if len(sectorInfo) == 0 {
 		return nil, nil, xerrors.New("generate window post len(sectorInfo)=0")
@@ -211,7 +213,7 @@ func (m *Manager) generateWindowPoSt(ctx context.Context, minerID abi.ActorID, s
 	return out, skipped, retErr
 }
 
-func (m *Manager) generatePartitionWindowPost(ctx context.Context, spt abi.RegisteredSealProof, ppt abi.RegisteredPoStProof, minerID abi.ActorID, partIndex int, sc []storiface.PostSectorChallenge, randomness abi.PoStRandomness) (proof.PoStProof, []abi.SectorID, error) {
+func (m *Manager) generatePartitionWindowPost(ctx context.Context, spt abi.RegisteredSealProof, ppt abi.RegisteredPoStProof, minerID abi.ActorID, partIndex int, sc []storiface.PostSectorChallenge, randomness abi.PoStRandomness) (miner.PoStProof, []abi.SectorID, error) {
 	log.Infow("generateWindowPost", "index", partIndex)
 
 	var result storiface.WindowPoStResult
@@ -230,12 +232,12 @@ func (m *Manager) generatePartitionWindowPost(ctx context.Context, spt abi.Regis
 	return result.PoStProofs, result.Skipped, err
 }
 
-func (m *Manager) GenerateWinningPoStWithVanilla(ctx context.Context, proofType abi.RegisteredPoStProof, minerID abi.ActorID, randomness abi.PoStRandomness, proofs [][]byte) ([]proof.PoStProof, error) {
+func (m *Manager) GenerateWinningPoStWithVanilla(ctx context.Context, proofType abi.RegisteredPoStProof, minerID abi.ActorID, randomness abi.PoStRandomness, proofs [][]byte) ([]miner.PoStProof, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m *Manager) GenerateWindowPoStWithVanilla(ctx context.Context, proofType abi.RegisteredPoStProof, minerID abi.ActorID, randomness abi.PoStRandomness, proofs [][]byte, partitionIdx int) (proof.PoStProof, error) {
+func (m *Manager) GenerateWindowPoStWithVanilla(ctx context.Context, proofType abi.RegisteredPoStProof, minerID abi.ActorID, randomness abi.PoStRandomness, proofs [][]byte, partitionIdx int) (miner.PoStProof, error) {
 	//TODO implement me
 	panic("implement me")
 }

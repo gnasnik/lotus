@@ -11,11 +11,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/filecoin-project/go-state-types/builtin/v8/miner"
+
 	"golang.org/x/xerrors"
 
 	ffi "github.com/filecoin-project/filecoin-ffi"
 	"github.com/filecoin-project/go-state-types/abi"
-	"github.com/filecoin-project/specs-actors/actors/runtime/proof"
 	"github.com/filecoin-project/specs-storage/storage"
 
 	"github.com/filecoin-project/lotus/extern/sector-storage/fsutil"
@@ -740,7 +741,7 @@ func (st *Local) GenerateSingleVanillaProof(ctx context.Context, minerID abi.Act
 	}
 
 	psi := ffi.PrivateSectorInfo{
-		SectorInfo: proof.SectorInfo{
+		SectorInfo: miner.SectorInfo{
 			SealProof:    si.SealProof,
 			SectorNumber: si.SectorNumber,
 			SealedCID:    si.SealedCID,
